@@ -1,0 +1,74 @@
+####
+ifdef MAKECMDGOALS
+	TARGET = $(MAKECMDGOALS)
+else
+	TARGET = gnu
+endif
+TYPE = gnu
+#
+ifeq ($(TARGET),intel)
+	TYPE = intel
+	COMPILE_TYPE = intel
+endif
+ifeq ($(TARGET),mp)
+	TYPE = mp
+	CPPFLAGS = -fopenmp $(CPPFLAGS2) -DMP -fPIC
+	COMPILE_TYPE = gnu
+endif
+ifeq ($(TARGET),pg)
+	TYPE = pg
+	CPPFLAGS = -pg -g $(CPPFLAGS2)
+	#COMPILE_TYPE = intel
+	COMPILE_TYPE = gnu
+endif
+ifeq ($(TARGET),gdb)
+	TYPE = gdb
+	COMPILE_TYPE = gnu
+	OPTFLAGS = -g -DGDB
+endif
+ifeq ($(TARGET),gnu)
+	TYPE = gnu
+	COMPILE_TYPE = gnu
+	OPTFLAGS = -O2
+endif
+##
+ifeq ($(COMPILE_TYPE),intel)
+	CC = icpc
+	CPP = icpc
+	F90 = ifort
+	F77 = ifort
+	OPTFLAGS = -qopt-report=5 -qopt-report-phase:vec -O3 -std=c++11
+endif
+####
+ifeq ($(COMPILE_TYPE),gnu)
+	CC = gcc
+	CPP = g++
+	F77 = g77
+	F90 = gfortran
+	OPTFLAGS = -O3 -std=gnu++11
+endif
+####
+OBJ_1 = $(patsubst %.cc, .$(TYPE).%.o, $(SRC))
+OBJ_2 = $(patsubst %.c, .$(TYPE).%.o, $(OBJ_1))
+OBJ_3 = $(patsubst %.f, .$(TYPE).%.o, $(OBJ_2))
+OBJ = $(patsubst %.f90, .$(TYPE).%.o, $(OBJ_3))
+
+OBJ0_1 = $(patsubst %.cc, .$(TYPE).%.o, $(SRC0))
+OBJ0_2 = $(patsubst %.c, .$(TYPE).%.o, $(OBJ0_1))
+OBJ0_3 = $(patsubst %.f, .$(TYPE).%.o, $(OBJ0_2))
+OBJ0 = $(patsubst %.f90, .$(TYPE).%.o, $(OBJ0_3))
+
+OBJ1_1 = $(patsubst %.cc, .$(TYPE).%.o, $(SRC1))
+OBJ1_2 = $(patsubst %.c, .$(TYPE).%.o, $(OBJ1_1))
+OBJ1_3 = $(patsubst %.f, .$(TYPE).%.o, $(OBJ1_2))
+OBJ1 = $(patsubst %.f90, .$(TYPE).%.o, $(OBJ1_3))
+
+#
+.$(TYPE).%.o: %.c
+	$(CC) $(CFLAGS) $(OPTFLAGS) -c $< -o $@
+.$(TYPE).%.o: %.cc
+	$(CPP) $(CPPFLAGS) $(OPTFLAGS) -c $< -o $@
+.$(TYPE).%.o: %.f
+	$(F90) $(FFLAGS) $(OPTFLAGS) -c $< -o $@
+.$(TYPE).%.o: %.f90
+	$(F90) $(F90FLAGS) $(OPTFLAGS) -c $< -o $@
