@@ -95,7 +95,7 @@ Threshold for SS-segment based alignment prefilter. (Not very impactful unless u
 Threshold for coarse-grained segment-based SPscore filter.
 * **-singledom**:\
 Indicator that alignments are between single domains. (Allows strict pre-filtering based on SS)
-* **-finalgap0**: Default: 0.2\##Optimized parameters
+* **-finalgap0**: Default: 0.2\
 Gap open penalty for final alignment. (Must be >0. Unlikely to be effective if >0.5 since 0.5 is used for intermediate steps). Larger values produce better local alignments.
 * **-convergence_criterion**: Default: 0.05\
 Amount of improvement over best alignment required to stop iterating between alignment and superimposing.
