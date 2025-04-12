@@ -4,6 +4,8 @@ __pycache__/
 
 # C extensions
 *.so
+*.o
+*.gnu
 
 # Distribution / packaging
 bin/
