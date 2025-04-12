@@ -23,6 +23,7 @@ namespace PARAMS2{
 	vector<string> folds;
 }
 static string runtype = "";
+bool inbin = false;
 using namespace PARAMS2;
 int DEBUG = 0;
 
@@ -72,6 +73,7 @@ void rdparams2(int argc, char *argv[]){
 			}
 		}
 		else if(opt1 == "-tdb") {fdb = argv[++i0]; runtype="db";}
+		else if(opt1 == "-bin") {inbin=true;}
 		else die("unknown option: %s", argv[i0]);
 		i0 ++;
 	}
@@ -91,7 +93,7 @@ void run(){
     }
 }
 
-void rundb(){
+void rundb(bool bin){
     //FILE *fp = stdout;
     Protein2 *p1;
 	string name;
@@ -107,7 +109,11 @@ void rundb(){
 		name = bn + "\n";
 		ofs.write(name.c_str(), name.size());
 		p1 = new Protein2();
-        p1->rdideal(Qlist[j]);
+        if (bin){
+            p1->rdbin(Qlist[j]);
+        } else {
+            p1->rdideal(Qlist[j]);
+        }
 		new_offset = p1->wrbin1(ofs);
 		//printf("%s %d\n", bn.c_str(), offset);
 		printf("%s %" PRId64 "\n", bn.c_str(), offset);
@@ -125,6 +131,6 @@ int main(int argc, char *argv[]){
     if(runtype == "") {
 		run();
 	} else if (runtype == "db"){
-		rundb();
+		rundb(inbin);
 	}
 }
