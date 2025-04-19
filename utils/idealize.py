@@ -4,7 +4,7 @@ import os
 import SPlib as library
 from sklearn.decomposition import PCA 
 import numpy as np
-from Bio.PDB import PDBParser
+from Bio.PDB import PDBParser, MMCIFParser
 from Bio.PDB import NeighborSearch
 #from Bio.Data.SCOPData import protein_letters_3to1 #old version
 from Bio.Data.PDBData import protein_letters_3to1_extended as protein_letters_3to1
@@ -13,7 +13,6 @@ import copy
 
 #DSSP_DICT = {'H': 1, 'G': 1, 'I': 1, 'E': 2, 'B': 2}
 DSSP_DICT = {'H': 1, 'E': 2}
-p = PDBParser()
        
 def rdDSSP(fn, seq):
     data = []
@@ -141,9 +140,11 @@ def smooth_contacts_afdb_clust(contact_number, cutoff=4.5, cutoff2=0.7):
     keep = np.logical_not(discard)
     return keep
 
-def read_structure(fn, trim=False):
+def read_structure(fn, trim=False, parser=None):
     if fn.split('.')[-1] == 'gz': open_fn = gzip.open
     else: open_fn = open
+    if not parser: p = PDBParser()
+    else: p = parser
     with open_fn(fn, 'rt') as g:
         s = p.get_structure("", g)[0]
 
@@ -166,10 +167,10 @@ def read_structure(fn, trim=False):
         else:
             return nr, seq, np.array(coord), np.ones(nr)
 
-def process_structure(name, dssdir, sdir, odir, structure_suffix='pdb', af2model=False, trim=False):
+def process_structure(name, dssdir, sdir, odir, structure_suffix='pdb', af2model=False, trim=False, parser=None):
     fn = f'{sdir}/{name}.{structure_suffix}.gz'
     if not os.path.isfile(fn): fn = f'{sdir}/{name}.{structure_suffix}'
-    nr, seq, coord, trim_mask = read_structure(fn, trim=trim)
+    nr, seq, coord, trim_mask = read_structure(fn, trim=trim, parser=parser)
     
     # Extract pre-computed DSSP labels
     try:
@@ -257,10 +258,12 @@ if __name__ == '__main__':
     parser.add_argument('--trim', action='store_true', help='Flag to trim hyperexposed residues likely to be disordered')
     args = parser.parse_args()
 
+    if 'cif' in args.structure_suffix: p = MMCIFParser()
+    else: p = PDBParser()
     for target in rd(args.input_list):
         if os.path.isfile(f"{args.odir}/{target}.ideal"): continue
         #if not os.path.isfile(f"{args.sdir}{target}.{args.structure_suffix}.gz"): continue
         process_structure(target, args.dssdir, args.sdir, args.odir, \
-            structure_suffix=args.structure_suffix, trim=args.trim, af2model=args.af2model)
+            structure_suffix=args.structure_suffix, trim=args.trim, af2model=args.af2model, parser=p)
 
 
