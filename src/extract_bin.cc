@@ -18,7 +18,7 @@ namespace PARAMS2{
     using namespace Salign_PARAMS2;
 //  vector<string> Tlist, Qlist;
     unordered_set<string> Qset;
-    string fali, idir, odir, fdb;
+    string fali, idir, odir, fdb, fdbout;
     int bpairlist=0, bcheck=0;
     vector<string> folds;
 }
@@ -44,7 +44,7 @@ inline string getdir2(string sdir0){
 }
 
 void rdparams2(int argc, char *argv[]){
-    string usage = "Usage: RUN fdb odir [-q/-qlist]";
+    string usage = "Usage: RUN fdb odir [-q query / -qlist query_list] [-tdb in.db]";
     if(argc < 2) die(usage.c_str());
     fali = idir = odir = "";
     int i0 = 1;
@@ -68,6 +68,7 @@ void rdparams2(int argc, char *argv[]){
                 Qset.insert(argv[i0+1]);
             }
         }
+		else if(opt1 == "-tdb") {fdbout = argv[++i0]; runtype="db";}
         else die("unknown option: %s", argv[i0]);
         i0 ++;
     }
@@ -77,8 +78,8 @@ void run(){
     //FILE *fp = stdout;
     std::ifstream ifs(fdb, std::ios::binary);
     std::ifstream ifs_index(fdb + ".index", std::ios::binary);
-    if(ifs.fail()) return;
-    if(ifs_index.fail()) return;
+    if(ifs.fail()) die("Invalid DB");
+    if(ifs_index.fail()) die("Invalid DB index");
 
     Protein2 Tpro;
     string out_fn, name, line;
@@ -104,10 +105,48 @@ void run(){
     }
 }
 
+void rundb(){
+    //indb
+	std::ifstream ifs(fdb, std::ios::binary);
+    std::ifstream ifs_index(fdb + ".index", std::ios::binary);
+    if(ifs.fail()) die("Invalid DB");
+    if(ifs_index.fail()) die("Invalid DB index");
+
+	//outdb
+    std::ofstream ofs(fdbout, std::ios::binary);
+    int n_entries = Qset.size();
+    ofs.write(reinterpret_cast<const char*>(&n_entries), sizeof(int));
+    
+	Protein2 *p1;
+    string out_fn, name, line, bn;
+    vector<string> ss;
+
+    int64_t offset = (int64_t)sizeof(int), new_offset=(int64_t)0;
+    while(getline(ifs_index, line)){
+		int n = str2dat(line, ss);
+        if(Qset.find(ss[0]) != Qset.end()){
+			p1 = new Protein2();
+
+			ifs.seekg(stoll(ss[1]));
+			std::getline(ifs, bn);
+			name = bn + "\n";
+			
+			ofs.write(name.c_str(), name.size());
+			p1->rdbin1(ifs);
+
+			new_offset = p1->wrbin1(ofs);
+			printf("%s %" PRId64 "\n", bn.c_str(), offset);
+			offset+=(new_offset+name.size());
+			delete p1;
+    	}
+	}
+}
 
 int main(int argc, char *argv[]){
     rdparams2(argc, argv);
     if(runtype == "") {
         run();
-    }
+    } else if (runtype == "db"){
+		rundb();
+	}
 }
