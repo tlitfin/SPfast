@@ -1,5 +1,5 @@
 
-# SPfast: Highly efficient protein structure alignment using coarse-grained, segment-based representations and block-sparse optimization 
+# SPfast: Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization
 
 <p align="center"><img src=".github/results.png" height="80%" width="80%"></p>
 
@@ -52,7 +52,8 @@
 ```
 # Precompute representative pseudoatoms
 python ../utils/idealize.py example_list --structure_suffix ent 
-
+```
+```
 # Convert to binary format
 ../src/prepare_bin.gnu -qlist ideal/ example_list .ideal
 
@@ -115,18 +116,22 @@ SPfast moving.pdb stationary.pdb
 ```
 
 ## References
+If you use this tool, please cite:
+
+- Litfin, T, Zhou, Y, von Itzstein, M. (2025). Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization. bioRxiv, doi:10.1101/2025.03.14.643159.
+
 The source code is adapted from:
 
-[1] Yang, Y, Zhan, J, Zhao, H & Zhou, Y (2012). 
+- Yang, Y, Zhan, J, Zhao, H & Zhou, Y. (2012). 
 A new size-independent score for pairwise protein structure alignment and its application to structure classification and nucleic-acid binding prediction. 
 Proteins, 80(8), 2080-2088.
 
 Optimum rotations are computed using the implementation described in:
 
-[2] Theobald, D. (2005).
+- Theobald, D. (2005).
 Rapid calculation of RMSD using a quaternion-based characteristic polynomial.
 Acta Crystallographica A, 61(4), 478-480.
 
-[3] Liu, P, Agrafiotis, D & Theobald, D. (2009).
+- Liu, P, Agrafiotis, D & Theobald, D. (2009).
 Fast determination of the optimal rotational matrix for macromolecular superpositions.
 Journal of Computational Chemistry. 31(7). 1561-1563.
