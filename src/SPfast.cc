@@ -269,7 +269,7 @@ void align_list_mp(){
 
 void align_db(string fdb, int batchstart=0, int batchend=-1){
     std::ifstream ifs(fdb, std::ios::binary);
-    if(ifs.fail()) return;
+    if(ifs.fail()) die("Invalid DB");
 
     int npro_db;
 
@@ -279,7 +279,7 @@ void align_db(string fdb, int batchstart=0, int batchend=-1){
     if ((batchstart>0) && (batchend>0)){
         std::ifstream ifs_index(fdb + ".index", std::ios::binary);
         //printf("HELLO\n");
-        if(ifs_index.fail()) return;
+        if(ifs_index.fail()) die("Invalid DB index");
         vector<string> ss;
         string line;
         while(getline(ifs_index, line)){
