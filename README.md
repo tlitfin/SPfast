@@ -52,7 +52,8 @@
 ```
 # Precompute representative pseudoatoms
 python ../utils/idealize.py example_list --structure_suffix ent 
-
+```
+```
 # Convert to binary format
 ../src/prepare_bin.gnu -qlist ideal/ example_list .ideal
 
