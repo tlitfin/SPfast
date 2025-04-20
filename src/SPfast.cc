@@ -31,6 +31,7 @@ namespace Salign_PARAMS{
 namespace PARAMS{
     using namespace Salign_PARAMS;
     vector<string> Tlist, Qlist;
+    unordered_set<string> Tset;
     string fali, idir, odir, fdb;
     int bpairlist=0, bcheck=0;
     vector<string> folds;
@@ -47,6 +48,17 @@ void rdlist(string sdir, string flist, vector<string> &slist, const string &suff
         int n = str2dat(line, ss);
         if(n < 1) continue;
         slist.push_back(sdir + ss[0] + suffix);
+    }
+    fs.close();
+}
+void rdlist2(string flist, unordered_set<string> &slist, const string &suffix){
+    string line; vector<string> ss;
+    ifstream fs(flist.c_str());
+    while(getline(fs, line)){
+        if(line[0] == '#') continue;
+        int n = str2dat(line, ss);
+        if(n < 1) continue;
+        slist.insert(ss[0]+suffix);
     }
     fs.close();
 }
@@ -84,6 +96,12 @@ void rdparams(int argc, char *argv[]){
             rdlist(argv[i0+1], argv[i0+2], Qlist, suffix);
             if(suffix != "") i0 ++;
             i0 += 2;
+        }else if(opt1 == "-subdb"){
+            suffix = "";
+            if(argc>i0+2 && argv[i0+2][0]!='-') suffix = argv[i0+2];
+            rdlist2(argv[i0+1], Tset, suffix);
+            if(suffix != "") i0 ++;
+            i0 ++;
         }else if(opt1 == "-pairlist"){
             bpairlist = 1;
             suffix = "";
@@ -270,53 +288,66 @@ void align_list_mp(){
 void align_db(string fdb, int batchstart=0, int batchend=-1){
     std::ifstream ifs(fdb, std::ios::binary);
     if(ifs.fail()) die("Invalid DB");
+    std::ifstream ifs_index(fdb + ".index", std::ios::binary);
+    if(ifs_index.fail()) die("Invalid DB index");
 
     int npro_db;
-
     ifs.read(reinterpret_cast<char*>(&npro_db), sizeof(npro_db));
+    vector<string> ss;
+    string line, name;
+    vector<Protein2> Tpro;
+    int ntpl, count;
 
-    int count = -1;
-    if ((batchstart>0) && (batchend>0)){
-        std::ifstream ifs_index(fdb + ".index", std::ios::binary);
-        //printf("HELLO\n");
-        if(ifs_index.fail()) die("Invalid DB index");
-        vector<string> ss;
-        string line;
+    //If searching subdb
+    if (Tset.size()>0){
+        ntpl = Tset.size();
+        count = 0;
+        Tpro.resize(ntpl);
+ 
         while(getline(ifs_index, line)){
-            count+=1;
-            if (count>=batchstart){
-                int n = str2dat(line, ss);
+            int n = str2dat(line, ss);
+            if(Tset.find(ss[0]) != Tset.end()){
                 ifs.seekg(stoll(ss[1]));
-                break;
+                std::getline(ifs, name);
+                Tpro[count].setname(name);
+                Tpro[count].rdbin1(ifs);
+                count++;
             }
-            //printf("%s\n", ss[0].c_str());
         }
-    }
-
-    // read the list of "template" proteins
-    vector<Protein2> Tpro(npro_db);
-
-    // Should index properly with starting bit of each entry to enable random access
-    int ntpl;
-    if (batchend>0)
-        if (batchend<=npro_db){
-            ntpl=batchend-batchstart;
-        } else {
-            ntpl=npro_db-batchstart;
+    } else {
+        //if batching
+        if ((batchstart>0) && (batchend>0)){
+            //find starting offset
+            count = -1;
+            while(getline(ifs_index, line)){
+                count+=1;
+                if (count>=batchstart){
+                    int n = str2dat(line, ss);
+                    ifs.seekg(stoll(ss[1]));
+                    break;
+                }
+            }
         }
-    else {
-        ntpl=npro_db;
-    }
-    
-    string name;
-    for(int i=0; i<ntpl; i++){
-        Tpro[i] = Protein2();
-        //ifs.seekg(4);
-        std::getline(ifs, name);
-        Tpro[i].setname(name);
-        Tpro[i].rdbin1(ifs);
-        //int pos = ifs.tellg();
-        //printf("%s %d\n", name.c_str(), pos);
+
+        // read the list of "template" proteins
+        if (batchend>0)
+            if (batchend<=npro_db){
+                ntpl=batchend-batchstart;
+            } else {
+                ntpl=npro_db-batchstart;
+            }
+        else {
+            ntpl=npro_db;
+        }
+
+        Tpro.resize(ntpl);      
+        for(int i=0; i<ntpl; i++){
+            Tpro[i] = Protein2();
+            //sequential read - no seek required
+            std::getline(ifs, name);
+            Tpro[i].setname(name);
+            Tpro[i].rdbin1(ifs);
+        }
     }
 
     unsigned int nthreads = std::thread::hardware_concurrency();
