@@ -299,8 +299,12 @@ void Protein2::rdbin1(std::ifstream &ifs){
 	size_t n;
 	size_t n_nseg;
 
-    ifs.read(reinterpret_cast<char*>(&n), sizeof(n));
-	ifs.read(reinterpret_cast<char*>(&n_nseg), sizeof(n_nseg));
+	size_t temp1[2];
+	ifs.read(reinterpret_cast<char*>(temp1), 2*sizeof(size_t));
+		
+	memcpy(&n, temp1, sizeof(size_t));
+	memcpy(&n_nseg, &temp1[1], sizeof(size_t));
+
 	x.resize(n);
 	x_ideal.resize(n);
 	ssec.resize(n);
@@ -311,23 +315,26 @@ void Protein2::rdbin1(std::ifstream &ifs){
 	segend.resize(n_nseg);
 	seglen.resize(n_nseg);
 
-	double temp[3*n];
-	ifs.read(reinterpret_cast<char*>(temp), 3*n*sizeof(double));
+	double temp[2*3*n];
+	ifs.read(reinterpret_cast<char*>(temp), 2*3*n*sizeof(double));
     for (size_t i = 0; i < n; ++i) {
 		x[i].setx(&temp[i*3]);
 	}
 
-	ifs.read(reinterpret_cast<char*>(temp), 3*n*sizeof(double));
-	for (size_t i = 0; i < n; ++i) {
-		x_ideal[i].setx(&temp[i*3]);
-    }	
+	for (size_t i = n; i < (n+n); ++i) {
+		x_ideal[i-n].setx(&temp[i*3]);
+    }
 
-    ifs.read(reinterpret_cast<char*>(ssec.data()), n*sizeof(int));
-    ifs.read(reinterpret_cast<char*>(resid.data()), n*sizeof(int));
-	ifs.read(reinterpret_cast<char*>(segstart.data()), n_nseg*sizeof(int));
-	ifs.read(reinterpret_cast<char*>(segmid.data()), n_nseg*sizeof(int));
-	ifs.read(reinterpret_cast<char*>(segend.data()), n_nseg*sizeof(int));
-	ifs.read(reinterpret_cast<char*>(seglen.data()), n_nseg*sizeof(int));
+	size_t total_ints = (2*n)+(4*n_nseg);
+	int temp2[total_ints];
+	
+    ifs.read(reinterpret_cast<char*>(temp2), total_ints*sizeof(int));	
+	memcpy(ssec.data(), temp2, n*sizeof(int));
+	memcpy(resid.data(), &temp2[n], n*sizeof(int));
+	memcpy(segstart.data(), &temp2[2*n], n_nseg*sizeof(int));
+	memcpy(segmid.data(), &temp2[(2*n)+(n_nseg)], n_nseg*sizeof(int));
+	memcpy(segend.data(), &temp2[(2*n)+(2*n_nseg)], n_nseg*sizeof(int));
+	memcpy(seglen.data(), &temp2[(2*n)+(3*n_nseg)], n_nseg*sizeof(int));
 
 	nres = n;
 	nseg = n_nseg;
