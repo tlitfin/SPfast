@@ -86,7 +86,7 @@ SPfast.gnu /path/to/id.suffix /path/to/id.suffix
 ```
 
 ## Parameters
-Note: The most impactful parameters are ssprefcut >> coarsecut > finalgap0 > convergence_criterion > segcut ~ riters
+Note: The most impactful parameters for improving sensitivity are ssprefcut >> coarsecut > finalgap0 > convergence_criterion > segcut ~ riters
 
 * **-SPscore**:
 Use original SPscore parameters rather than newly optimized parameters.
@@ -105,8 +105,15 @@ Maxmimum RMSD between seed fragments. (higher threshold means increased sensitiv
 * **-riters**: Default: 1\
 Number of superimposing iterations to convergence for a given alignment
 
-## Output Formats
-**-iprint {1,2,3}**
+## Reporting
+* **-iprint 1**:
+Display alignment scores only
+* **-iprint 2**
+Display alignment scores and transformation matrix
+* **-iprint 3**
+Display alignment scores, transformation matrix and alignment
+* **-reportcutoff**
+Filter output results by minimum score threshold
 
 ## PyMOL Plugin
 We have included a PyMOL plugin to enable pairwise alignment within PyMOL similar to builtin align/cealign functionality. The plugin can be installed with the Plugin Manager using the URL of this repository and the SPfast.py script. SPlib *must* be first installed with pip.\

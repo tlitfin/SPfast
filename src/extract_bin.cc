@@ -1,27 +1,13 @@
 #include "protein2.h"
 #include <inttypes.h>
 
-namespace Salign_PARAMS2{
-// alpha is the normalized factor(as seen in paper); D00 is "D0"; Denv the distance cutoff used to determine the "environment residues"
-    double Alpha=0.3, D00=4., Denv=12., cutoff=-1, gap_min=0., scaling_factor=3.75;
-// score_type decids the type of calculated alignment scores (SP, TM, GDT-scores are supported)
-// fragsize is the length of fragment for the original alignment trials during finding the best alignment
-    int score_type=iSP, fragsize=20; 
-// iprint controls the details to print, the bigger the more printed
-    int iprint=-9999;
-// bscoreOnly: 0, structure alignment; others, score only (using predefined alignment)
-// 1,scored according to resi No.; 2,scored according to residues sequentially
-    int bscoreOnly=0;
-    bool bfullalign=0;
-}
 namespace PARAMS2{
-    using namespace Salign_PARAMS2;
-//  vector<string> Tlist, Qlist;
     unordered_set<string> Qset;
     string fali, idir, odir, fdb, fdbout;
     int bpairlist=0, bcheck=0;
     vector<string> folds;
 }
+
 static string runtype = "";
 using namespace PARAMS2;
 int DEBUG = 0;
@@ -44,7 +30,7 @@ inline string getdir2(string sdir0){
 }
 
 void rdparams2(int argc, char *argv[]){
-    string usage = "Usage: RUN fdb odir [-q query / -qlist query_list] [-tdb in.db]";
+    string usage = "Usage: RUN fdb odir [-q query|-qlist query_list] [-tdb out.db]";
     if(argc < 2) die(usage.c_str());
     fali = idir = odir = "";
     int i0 = 1;

@@ -21,6 +21,7 @@ namespace Salign_PARAMS{
     int score_type=iSP, fragsize=0; 
 // iprint controls the details to print, the bigger the more printed
     int iprint=-9999;
+    double reportcutoff=-1.;
 // bscoreOnly: 0, structure alignment; others, score only (using predefined alignment)
 // 1,scored according to resi No.; 2,scored according to residues sequentially
     int bscoreOnly=0;
@@ -68,8 +69,7 @@ inline string getdir(string sdir0){
     return sdir;
 }
 void rdparams(int argc, char *argv[]){
-    string usage = "Usage: RUN [-pair pdb1 pdb2|-pairlist sdir list] [-iprint 1] [-SP|-TM|-GDT] [-fast] [-cutoff cut]"
-    ;
+    string usage = "Usage: RUN [-pair bin1 bin2|-pairlist dir pairlist|-q bin1 -t bin2|-q bin1 -tdb tdb| -qlist dir qlist .ideal.bin -tlist dir tlist .ideal.bin] [-iprint 1] [-SP|-TM|-GDT] [-fast]";
     if(argc < 3) die(usage.c_str());
     Tlist.clear(); Qlist.clear();
     fali = idir = odir = "";
@@ -160,6 +160,7 @@ void rdparams(int argc, char *argv[]){
         else if(opt1 == "-fullalign") bfullalign = 1;
         else if(opt1 == "-batchstart") batchstart = atoi(argv[++i0]);
         else if(opt1 == "-batchend") batchend = atoi(argv[++i0]);
+        else if(opt1 == "-reportcutoff") reportcutoff = strtod(argv[++i0], NULL);
         else die("unknown option: %s", argv[i0]);
         i0 ++;
     }

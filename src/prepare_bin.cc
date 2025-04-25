@@ -2,21 +2,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-namespace Salign_PARAMS2{
-// alpha is the normalized factor(as seen in paper); D00 is "D0"; Denv the distance cutoff used to determine the "environment residues"
-    double Alpha=0.3, D00=4., Denv=12., cutoff=-1, gap_min=0., scaling_factor=3.75;
-// score_type decids the type of calculated alignment scores (SP, TM, GDT-scores are supported)
-// fragsize is the length of fragment for the original alignment trials during finding the best alignment
-    int score_type=iSP, fragsize=20; 
-// iprint controls the details to print, the bigger the more printed
-    int iprint=-9999;
-// bscoreOnly: 0, structure alignment; others, score only (using predefined alignment)
-// 1,scored according to resi No.; 2,scored according to residues sequentially
-    int bscoreOnly=0;
-    bool bfullalign=0;
-}
 namespace PARAMS2{
-    using namespace Salign_PARAMS2;
     vector<string> Tlist, Qlist;
     string fali, idir, odir, fdb;
     int bpairlist=0, bcheck=0;
@@ -46,8 +32,7 @@ inline string getdir2(string sdir0){
 }
 
 void rdparams2(int argc, char *argv[]){
-    string usage = "Usage: RUN"
-    ;
+    string usage = "Usage: RUN [-q bin1|-qlist dir qlist .ideal] [-bin] [-tdb]";
     if(argc < 2) die(usage.c_str());
     Tlist.clear(); Qlist.clear();
     fali = idir = odir = "";
@@ -80,12 +65,10 @@ void rdparams2(int argc, char *argv[]){
 }
 
 void run(){
-    //FILE *fp = stdout;
     Protein2 *p1;
     for(int j=0; j<Qlist.size(); j++){
         string bn = basename(Qlist[j].c_str());
         string fn = Qlist[j] + ".bin";
-        //if (file_existed(fn)) continue;
         p1 = new Protein2();
         p1->rdideal(Qlist[j]);
         p1->wrbin(fn);
@@ -94,18 +77,14 @@ void run(){
 }
 
 void rundb(bool bin){
-    //FILE *fp = stdout;
     Protein2 *p1;
     string name;
     std::ofstream ofs(fdb, std::ios::binary);
     int n_entries = Qlist.size();
     ofs.write(reinterpret_cast<const char*>(&n_entries), sizeof(int));
-    //int offset = sizeof(int), new_offset=0;
     int64_t offset = (int64_t)sizeof(int), new_offset=(int64_t)0;
     for(int j=0; j<n_entries; j++){
         string bn = basename(Qlist[j].c_str());
-        //string fn = Qlist[j] + ".bin";
-        //if (file_existed(fn)) continue;
         name = bn + "\n";
         ofs.write(name.c_str(), name.size());
         p1 = new Protein2();
@@ -115,19 +94,15 @@ void rundb(bool bin){
             p1->rdideal(Qlist[j]);
         }
         new_offset = p1->wrbin1(ofs);
-        //printf("%s %d\n", bn.c_str(), offset);
         printf("%s %" PRId64 "\n", bn.c_str(), offset);
         offset+=(new_offset+name.size());
         delete p1;
-        //fflush(stdout);
-        //printf("%s %d %d %d\n", bn.c_str(), offset, new_offset, name.size());
     }
 }
 
 int main(int argc, char *argv[]){
     rdparams2(argc, argv);
     if(Qlist.size() < 1) die("no query selected");
-    //fflush(stdout);
     if(runtype == "") {
         run();
     } else if (runtype == "db"){
