@@ -1521,7 +1521,10 @@ void Salign::prtali(string &sinfo){
     char str[max(nA+nB+100,2001)];
 //
     double SPs[4];      // SPe, SPa, SPb
-    if(score_type == iSP) calSPscores(SPs);
+    if(score_type == iSP) {
+        calSPscores(SPs);
+        if (SPs[0]<reportcutoff) return;
+    }
 //
     if(iprint >= 99) {
         sprintf(str, "################## Alignment Report ##################\n"); sinfo += str;

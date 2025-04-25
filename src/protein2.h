@@ -184,7 +184,7 @@ enum {ieSP, ieTMa, ieLG, ieGDT, ieLA, ieRMS, ieLE, ieTMb, ieTMc, ieSEQ};
 namespace Salign_PARAMS{
     extern int iprint, inorm, score_type, fragsize, bscoreOnly;
     extern double Alpha, Beta, D00, Denv, cutoff, gap_min, scaling_factor;
-    extern double segcut, segalpha, ssprefcut, pref_gap0, pref_gap1, final_gap0, convergence_criterion, coarsecut;
+    extern double segcut, segalpha, ssprefcut, pref_gap0, pref_gap1, final_gap0, convergence_criterion, coarsecut, reportcutoff;
     extern int riters;
     extern bool bfullalign, bsingledom;
     extern string outpdb;
