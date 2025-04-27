@@ -19,7 +19,7 @@ if fpath[-1] == 'pdb':
     io = PDBIO()
     bn = argv[1].split('.pdb')[0]
     extension = 'pdb'
-if fpath[-1] == 'cif':
+elif fpath[-1] == 'cif':
     p = MMCIFParser()
     io = MMCIFIO()
     bn = argv[1].split('.cif')[0]
