@@ -13,9 +13,13 @@
 - [References](#references)
 
 ## Demo
-- A pre-computed structure database for the AFDB-clusters representatives is available for download [here](https://spfast.tomlitfin.workers.dev/afdb-clu.db.tar.gz) (6GB).
-- A demo [notebook](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_db.ipynb) is available to try on Google Colab to enable search of AFDB-clusters representatives.
-    - **Note:** SPfast is suited to multi-core CPUs and not optimized for colab execution
+|   Notebook                                                                                                                   | Data                                                                                 | Description                                                                                |
+|:-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+|[Structure search](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_db.ipynb) | [afdb-clu.db](https://spfast.tomlitfin.workers.dev/afdb-clu.db.tar.gz) (6GB)         | Search structure database of 2.3M AFDB clusters representatives                                     |
+|[PFAM annotation](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_PFAM.ipynb)  | [afdb-clu-annot.db](https://spfast.tomlitfin.workers.dev/afdb-clu-annot.db.tar.gz) (1.6GB) | Annotate function by structure-based search of 375k curated AFDB clusters PFAM annotations |
+
+
+**Note:** SPfast is suited to multi-core CPUs and not optimized for colab execution
 
 ## Setup
 
@@ -125,20 +129,23 @@ SPfast moving.pdb stationary.pdb
 ## References
 If you use this tool, please cite:
 
-- Litfin, T, Zhou, Y, von Itzstein, M. (2025). Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization. bioRxiv, doi:10.1101/2025.03.14.643159.
+- Litfin, T, Zhou, Y, von Itzstein, M. (2025). Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization. bioRxiv. doi:10.1101/2025.03.14.643159.
 
 The source code is adapted from:
 
 - Yang, Y, Zhan, J, Zhao, H & Zhou, Y. (2012). 
 A new size-independent score for pairwise protein structure alignment and its application to structure classification and nucleic-acid binding prediction. 
-Proteins, 80(8), 2080-2088.
+Proteins. 80(8), 2080-2088.
 
 Optimum rotations are computed using the implementation described in:
 
 - Theobald, D. (2005).
 Rapid calculation of RMSD using a quaternion-based characteristic polynomial.
-Acta Crystallographica A, 61(4), 478-480.
+Acta Crystallographica A. 61(4), 478-480.
 
 - Liu, P, Agrafiotis, D & Theobald, D. (2009).
 Fast determination of the optimal rotational matrix for macromolecular superpositions.
 Journal of Computational Chemistry. 31(7). 1561-1563.
+
+Reference data is described:
+- Barrio-Hernandez, I., Yeo, J., Jänes, J. et al. (2023). Clustering predicted structures at the scale of the known protein universe. Nature. 622, 637–645. 
