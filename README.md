@@ -16,7 +16,7 @@
 |   Notebook                                                                                                                   | Data                                                                                 | Description                                                                                |
 |:-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 |[Structure search](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_db.ipynb) | [afdb-clu.db](https://spfast.tomlitfin.workers.dev/afdb-clu.db.tar.gz) (6GB)         | Search structure database of 2.3M AFDB clusters representatives                                     |
-|[PFAM annotation](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_PFAM.ipynb)  | [afdb-clu-annot.db](https://spfast.tomlitfin.workers.dev/afdb-clu-annot.db.tar.gz) (1.6GB) | Annotate function by structure-based search of 375k curated AFDB clusters PFAM annotations |
+|[PFAM annotation](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_PFAM.ipynb)  | [afdb-clu-annot.db](https://spfast.tomlitfin.workers.dev/afdb-clu-annot.db.tar.gz) (2GB) | Annotate function by structure-based search of 375k curated AFDB clusters PFAM annotations |
 
 
 **Note:** SPfast is suited to multi-core CPUs and not optimized for colab execution
