@@ -55,7 +55,9 @@ chmod +x mkdssp-4.4.0-linux-x64
 Paper results were produced with `dssp-2.0.4-linux-amd64`.
 
 ## Quick start (example data)
-This reproduces the full pipeline on files under `example/`. The required starting inputs are a directory of structure files and a directory of corresponding DSSP secondary structure annotation files.
+This reproduces the full pipeline on files under `example/`. 
+
+The required starting inputs are a directory of structure files and a directory of corresponding DSSP secondary structure annotation files.
 
 1. Generate `.ideal` files from structures:
 ```bash
@@ -66,17 +68,19 @@ python utils/idealize.py example/example_list \
   --structure_suffix ent
 ```
 
-2. Convert `.ideal` files to `.ideal.bin` files:
+2. Choose one search input format:
+
+Option A (default): convert `.ideal` files into per-structure `.ideal.bin` files:
 ```bash
 src/prepare_bin.gnu -qlist example/ideal example/example_list .ideal
 ```
 
-3. Build a packed database (single file + index):
+Option B (optional): pack structures into a single database (`.db` + `.db.index`):
 ```bash
 src/prepare_bin.gnu -qlist example/ideal example/example_list .ideal -tdb example/example.db > example/example.db.index
 ```
 
-4. Extract entries from the database (optional):
+3. Optional utility (Option B only): extract entries back out of the packed database:
 ```bash
 src/extract_bin.gnu example/example.db example/ideal -q d1qo0d_.ideal
 src/extract_bin.gnu example/example.db example/ideal -qlist example/example_list .ideal
