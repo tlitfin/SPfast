@@ -80,6 +80,10 @@ python ../utils/idealize.py example_list --structure_suffix ent
 
 # Search a list of pairs
 ../src/SPfast.gnu -plist example_pairs -idir ideal/
+
+# Pairlist mode (minimum unique all-vs-all within one list)
+# Computes each unordered pair once: N*(N-1)/2 (skips self-pairs and reversed duplicates)
+../src/SPfast.gnu -pairlist ideal/ example_list .ideal.bin
 ```
 
 Both query and database entries can be provided with flags or as positional arguments:
