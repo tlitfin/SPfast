@@ -1,133 +1,184 @@
 
-# SPfast: Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization
+# SPfast
+Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization.
 
 <p align="center"><img src=".github/results.png" height="80%" width="80%"></p>
 
-# Contents
-- [Demo](#Demo)
+## Contents
+- [Demo notebooks](#demo-notebooks)
 - [Setup](#setup)
-- [Usage](#usage)
-- [Parameters](#parameters)
-- [Output Formats](#output-formats)
-- [PyMOL Plugin](#pymol-plugin)
+- [Quick start (example data)](#quick-start-example-data)
+- [Search modes](#search-modes)
+- [Important parameters](#important-parameters)
+- [Reporting options](#reporting-options)
+- [PyMOL plugin](#pymol-plugin)
 - [References](#references)
 
-## Demo
-|   Notebook                                                                                                                   | Data                                                                                 | Description                                                                                |
-|:-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-|[Structure search](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_db.ipynb) | [afdb-clu.db](https://spfast.tomlitfin.workers.dev/afdb-clu.db.tar.gz) (6GB)<br>[BFVD.db](https://spfast.tomlitfin.workers.dev/BFVD.db.tar.gz) (670MB)         | Search structure database of predicted cluster representatives                                     |
-|[PFAM annotation](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_PFAM.ipynb)  | [afdb-clu-annot.db](https://spfast.tomlitfin.workers.dev/afdb-clu-annot.db.tar.gz) (2GB) | Annotate function by structure-based search of 375k curated AFDB clusters PFAM annotations |
+## Demo notebooks
+| Notebook | Data | Description |
+|:---|:---|:---|
+| [Structure search](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_db.ipynb) | [afdb-clu.db](https://spfast.tomlitfin.workers.dev/afdb-clu.db.tar.gz) (6 GB)<br>[BFVD.db](https://spfast.tomlitfin.workers.dev/BFVD.db.tar.gz) (670 MB) | Search a structure database of predicted cluster representatives |
+| [PFAM annotation](https://colab.research.google.com/github/tlitfin/SPfast/blob/main/notebooks/SPfast_AFDB_clusters_PFAM.ipynb) | [afdb-clu-annot.db](https://spfast.tomlitfin.workers.dev/afdb-clu-annot.db.tar.gz) (2 GB) | Annotate protein function by structure search over 375k curated AFDB clusters |
 
-
-**Note:** SPfast is suited to multi-core CPUs and not optimized for colab execution
+Note: SPfast is designed for multi-core CPUs and is not optimized for Colab.
 
 ## Setup
+Commands below assume you are in the repository root.
 
-1. Create python environment to process PDB format structures to SPfast-compatible structure files
-
-    ```
-    conda create -n SPfast
-    conda activate SPfast
-    conda install pybind11 scikit-learn biopython numpy python=3.8 -c conda-forge
-    ```
-
-2. Install SPlib python library
-    ```
-    pip install ./SPfast/
-    ```
-    - **NOTE:** Python bindings are provided in SPlib but are not suitable for efficient database search
-
-
-3. Compile SPfast and prepare_bin binaries
-    ```
-    cd SPfast/src
-    make gnu
-    cd ../../
-    ```
-
-4. Install DSSP to extract secondary structures labels.
-    ```
-    wget https://github.com/PDB-REDO/dssp/releases/download/v4.4.0/mkdssp-4.4.0-linux-x64 && chmod +x mkdssp-4.4.0-linux-x64
-    ```
-   - **NOTE**: Results in paper were produced with legacy dssp-2.0.4-linux-amd64
-
-## Usage
-### Preprocess structures
-```
-# Precompute representative pseudoatoms
-python ../utils/idealize.py example_list --structure_suffix ent 
-```
-```
-# Convert to binary format
-../src/prepare_bin.gnu -qlist ideal/ example_list .ideal
-
-## OR ##
-
-# Database format to avoid many small files
-../src/prepare_bin.gnu -qlist ideal/ example_list .ideal -tdb example.db > example.db.index
-
-# Extract entries from database
-../src/extract_bin.gnu example.db ./ -q d1qo0d_.ideal
-../src/extract_bin.gnu example.db ./ -qlist example_list .ideal
-```
-### Structure Search
-```
-# Search all-vs-all
-../src/SPfast.gnu -qlist ideal/ example_list .ideal.bin -tlist ideal/ example_list .ideal.bin
-
-# Search against database
-../src/SPfast.gnu -q ideal/d1ktga_.ideal.bin -tdb example.db
-
-# Search a list of pairs
-../src/SPfast.gnu -plist example_pairs -idir ideal/
-
-# Pairlist mode (minimum unique all-vs-all within one list)
-# Computes each unordered pair once: N*(N-1)/2 (skips self-pairs and reversed duplicates)
-../src/SPfast.gnu -pairlist ideal/ example_list .ideal.bin
+1. Create an environment for preprocessing structures (`utils/idealize.py`) and PyMOL bindings:
+```bash
+conda create -n spfast python=3.8 -c conda-forge
+conda activate spfast
+conda install -c conda-forge pybind11 scikit-learn biopython numpy
 ```
 
-Both query and database entries can be provided with flags or as positional arguments:
+2. Install the Python extension module (`SPlib`):
+```bash
+pip install .
 ```
-SPfast.gnu -qlist /path/to/ id_list .suffix -tlist /path/to/ id_list .suffix
-SPfast.gnu -q /path/to/id.suffix -t /path/to/id.suffix
-SPfast.gnu /path/to/id.suffix /path/to/id.suffix
+Note: `SPlib` Python bindings are useful for preprocessing and the PyMOL plugin. High-throughput searches should use the compiled binaries below.
+
+3. Build command-line binaries:
+```bash
+make -C src gnu
+```
+This produces:
+- `src/SPfast.gnu`
+- `src/prepare_bin.gnu`
+- `src/extract_bin.gnu`
+
+4. Install DSSP for external secondary-structure labels:
+```bash
+wget https://github.com/PDB-REDO/dssp/releases/download/v4.4.0/mkdssp-4.4.0-linux-x64
+chmod +x mkdssp-4.4.0-linux-x64
+```
+Paper results were produced with `dssp-2.0.4-linux-amd64`.
+
+## Quick start (example data)
+This reproduces the full pipeline on files under `example/`. 
+
+The required starting inputs are a directory of structure files and a directory of corresponding DSSP secondary structure annotation files.
+
+1. Generate `.ideal` files from structures:
+```bash
+python utils/idealize.py example/example_list \
+  --sdir example/structures \
+  --dssdir example/DSSP \
+  --odir example/ideal \
+  --structure_suffix ent
 ```
 
-## Parameters
-Note: The most impactful parameters for improving sensitivity are ssprefcut >> coarsecut > finalgap0 > convergence_criterion > segcut ~ riters
+2. Choose one search input format:
 
-* **-SPscore**:
-Use original SPscore parameters rather than newly optimized parameters.
-* **-ssprefcut**: Default: 0.35\
-Threshold for SS-segment based alignment prefilter. (Not very impactful unless used in conjunction with -singledom)
-* **-coarsecut**: Default: -1.0\
-Threshold for coarse-grained segment-based SPscore filter.
-* **-singledom**:\
-Indicator that alignments are between single domains. (Allows strict pre-filtering based on SS)
-* **-finalgap0**: Default: 0.2\
-Gap open penalty for final alignment. (Must be >0. Unlikely to be effective if >0.5 since 0.5 is used for intermediate steps). Larger values produce better local alignments.
-* **-convergence_criterion**: Default: 0.05\
-Amount of improvement over best alignment required to stop iterating between alignment and superimposing.
-* **-segcut**: Default: 5.0\
-Maxmimum RMSD between seed fragments. (higher threshold means increased sensitivity and slower execution)
-* **-riters**: Default: 1\
-Number of superimposing iterations to convergence for a given alignment
-
-## Reporting
-* **-iprint 1**:
-Display alignment scores only
-* **-iprint 2**
-Display alignment scores and transformation matrix
-* **-iprint 3**
-Display alignment scores, transformation matrix and alignment
-* **-reportcutoff**
-Filter output results by minimum score threshold
-
-## PyMOL Plugin
-We have included a PyMOL plugin to enable pairwise alignment within PyMOL similar to builtin align/cealign functionality. The plugin can be installed with the Plugin Manager using the URL of this repository and the SPfast.py script. SPlib *must* be first installed with pip.\
-The alignment can be conducted within the PyMOL terminal with the following syntax:
+Option A (default): convert `.ideal` files into per-structure `.ideal.bin` files:
+```bash
+src/prepare_bin.gnu -qlist example/ideal example/example_list .ideal
 ```
-SPfast moving.pdb stationary.pdb
+
+Option B (optional): pack structures into a single database (`.db` + `.db.index`):
+```bash
+src/prepare_bin.gnu -qlist example/ideal example/example_list .ideal -tdb example/example.db > example/example.db.index
+```
+
+3. Optional utility (Option B only): extract entries back out of the packed database:
+```bash
+src/extract_bin.gnu example/example.db example/ideal -q d1qo0d_.ideal
+src/extract_bin.gnu example/example.db example/ideal -qlist example/example_list .ideal
+```
+
+## Search modes
+All commands assume paths from repository root.
+
+All-vs-all between two lists:
+```bash
+src/SPfast.gnu -qlist example/ideal example/example_list .ideal.bin \
+  -tlist example/ideal example/example_list .ideal.bin
+```
+
+Query against packed database:
+```bash
+src/SPfast.gnu -q example/ideal/d1ktga_.ideal.bin -tdb example/example.db
+```
+
+List of explicit pairs (`query target` per line):
+```bash
+src/SPfast.gnu -plist example/example_pairs -idir example/ideal
+```
+
+Unique pairwise all-vs-all within one list (`N*(N-1)/2` comparisons):
+```bash
+src/SPfast.gnu -pairlist example/ideal example/example_list .ideal.bin
+```
+
+Pairwise single comparison:
+```bash
+src/SPfast.gnu example/ideal/d1ktga_.ideal.bin example/ideal/d1xria_.ideal.bin
+```
+
+## Important parameters
+Most impactful sensitivity controls (roughly): `-ssprefcut` >> `-coarsecut` > `-finalgap0` > `-converge` > `-segcut` ~ `-riters`.
+
+- `-SPscore`: use original SPscore parameters instead of optimized defaults.
+- `-ssprefcut` (default `-1`): threshold for SS-segment prefiltering; most useful with `-singledom`.
+- `-coarsecut` (default `-1`): coarse segment-based score cutoff.
+- `-singledom`: assume single-domain proteins; enables stricter SS-based prefiltering.
+- `-finalgap0` (default `0.2`): final-stage gap-open penalty (must be > 0).
+- `-converge` (default `0.05`): stop criterion for iterative alignment/superposition refinement.
+- `-segcut` (default `5.0`): maximum RMSD for seed fragments (higher = more sensitive, slower).
+- `-riters` (default `1`): number of refinement iterations.
+- `-fast`: speed-focused preset (`-converge 0.9 -coarsecut 5.5 -segcut 4.0`).
+
+## Reporting options
+- `-reportcutoff X`: print only results with score >= `X` (for SPscore output).
+
+### `-iprint 1` (single-line summary)
+Prints one result line per comparison.
+
+```text
+query target SPscore Rawscore SSscore nA nB Le SeqID Nali seeds valid_seeds coarse
+```
+
+Field meanings:
+- `SPscore`: effective SPscore (main ranking score).
+- `Rawscore`: unnormalized SPscore.
+- `SSscore`: Secondary structure prefilter score.
+- `nA`, `nB`: query/target lengths.
+- `Le`: effective aligned length.
+- `SeqID`: sequence identity (%).
+- `Nali`: number of aligned residue pairs.
+- `seeds`, `valid_seeds`: sampled and retained seed counts.
+- `coarse`: coarse-stage score.
+
+### `-iprint 2` (summary + transform)
+Includes everything from `-iprint 1`, then appends a 3-line rigid transform:
+```text
+t_x r11 r12 r13
+t_y r21 r22 r23
+t_z r31 r32 r33
+```
+Where `t_*` is translation and `r**` is the rotation matrix.
+
+### `-iprint 3` (summary + transform + alignment)
+Includes everything from `-iprint 2`, then appends a 3-line sequence alignment block:
+```text
+<query_start> <query_aligned_sequence> <query_end>
+             <match_quality_markers>
+<target_start> <target_aligned_sequence> <target_end>
+```
+Marker legend:
+- `:` aligned pair distance <= 4 A
+- `;` aligned pair distance < 5 A
+- `.` aligned pair distance < 8 A
+- space: no close structural match at that position
+
+## PyMOL plugin
+`SPfast.py` provides a pairwise alignment command for PyMOL (similar usage to `align`/`cealign`).
+
+1. Install `SPlib` first (`pip install .`).
+2. Install `SPfast.py` through the PyMOL Plugin Manager from this repository URL.
+3. Run from the PyMOL terminal:
+```text
+SPfast moving_selection, stationary_selection
 ```
 
 ## References
@@ -135,21 +186,15 @@ If you use this tool, please cite:
 
 - Litfin, T, Zhou, Y, von Itzstein, M. (2025). Ultra-fast and highly sensitive protein structure alignment with segment-level representations and block-sparse optimization. bioRxiv. doi:10.1101/2025.03.14.643159.
 
-The source code is adapted from:
+Source code is adapted from:
 
-- Yang, Y, Zhan, J, Zhao, H & Zhou, Y. (2012). 
-A new size-independent score for pairwise protein structure alignment and its application to structure classification and nucleic-acid binding prediction. 
-Proteins. 80(8), 2080-2088.
+- Yang, Y, Zhan, J, Zhao, H, Zhou, Y. (2012). A new size-independent score for pairwise protein structure alignment and its application to structure classification and nucleic-acid binding prediction. Proteins. 80(8), 2080-2088.
 
-Optimum rotations are computed using the implementation described in:
+Optimum rotations are computed using:
 
-- Theobald, D. (2005).
-Rapid calculation of RMSD using a quaternion-based characteristic polynomial.
-Acta Crystallographica A. 61(4), 478-480.
+- Theobald, D. (2005). Rapid calculation of RMSD using a quaternion-based characteristic polynomial. Acta Crystallographica A. 61(4), 478-480.
+- Liu, P, Agrafiotis, D, Theobald, D. (2009). Fast determination of the optimal rotational matrix for macromolecular superpositions. Journal of Computational Chemistry. 31(7), 1561-1563.
 
-- Liu, P, Agrafiotis, D & Theobald, D. (2009).
-Fast determination of the optimal rotational matrix for macromolecular superpositions.
-Journal of Computational Chemistry. 31(7). 1561-1563.
+Reference clustering data:
 
-Reference data is described:
-- Barrio-Hernandez, I., Yeo, J., Jänes, J. et al. (2023). Clustering predicted structures at the scale of the known protein universe. Nature. 622, 637–645. 
+- Barrio-Hernandez, I., Yeo, J., Janes, J. et al. (2023). Clustering predicted structures at the scale of the known protein universe. Nature. 622, 637-645.
