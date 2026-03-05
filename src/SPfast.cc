@@ -170,7 +170,7 @@ void rdparams(int argc, char *argv[]){
 }
 
 void align_query_parallel(vector<Protein2> &Tpro){
-    int n0 = 0, ntpl=Tpro.size();
+    int ntpl=Tpro.size();
     // scan the list of "query" proteins
     #if defined MP
         #pragma omp parallel for schedule(dynamic, 1)
@@ -190,6 +190,7 @@ void align_query_parallel(vector<Protein2> &Tpro){
 
         string* sdim = new string[ntpl]; //2.3M was too big for stack (before new)- segfault - may not be neccessary at all - must optimize!!
         for(int i=0; i<ntpl; i++) sdim[i] = "";
+        int n0 = bpairlist ? j + 1 : 0;
         for(int i=n0; i<ntpl; i++){
             Salign *sa1 = new Salign();
             int err = sa1 -> init(p1, &Tpro[i], 1);
@@ -217,7 +218,7 @@ void align_query_parallel(vector<Protein2> &Tpro){
 }
 
 void align_tpl_parallel(vector<Protein2> &Tpro){
-    int n0 = 0, ntpl=Tpro.size();
+    int ntpl=Tpro.size();
 
     int chunk_size = max(1, ntpl/2000);
 
@@ -237,6 +238,7 @@ void align_tpl_parallel(vector<Protein2> &Tpro){
 
         string* sdim = new string[ntpl]; //2.3M was too big for stack (before new)- segfault - may not be neccessary at all - must optimize!!
         for(int i=0; i<ntpl; i++) sdim[i] = "";
+        int n0 = bpairlist ? j + 1 : 0;
         #if defined MP
             #pragma omp parallel for schedule(dynamic, chunk_size)
         #endif
