@@ -77,7 +77,7 @@ def idealize(tpl, coord):
         coord[idxs1[2]] = qfrag[2]
     return coord
 
-def SPfast( sel1, sel2 ):
+def SPfast( sel2, sel1 ):
     """
     SPfast-based Alignment of two protein structures
     Adapted from cealign plugin
@@ -167,9 +167,14 @@ def SPfast( sel1, sel2 ):
     b[:3,:3] = a[:3,:3]
     b[:3,3] = a[3,:3]
 
-    print("Transformation Matrix:", b)
+    print("Transformation Matrix:")
+    print(b)
 
     cmd.transform_selection(mol1, b.flatten(), homogenous=0)
     
 ## Let PyMol know about the command
 cmd.extend("SPfast", SPfast)
+
+# Reuse PyMOL's alignment completion for both selection arguments.
+cmd.auto_arg[0]["SPfast"] = cmd.auto_arg[0]["align"]
+cmd.auto_arg[1]["SPfast"] = cmd.auto_arg[1]["align"]

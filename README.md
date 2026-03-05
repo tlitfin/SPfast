@@ -178,7 +178,7 @@ Marker legend:
 2. Install `SPfast.py` through the PyMOL Plugin Manager from this repository URL.
 3. Run from the PyMOL terminal:
 ```text
-SPfast moving_selection, stationary_selection
+SPfast stationary_selection, moving_selection
 ```
 
 ## References
